@@ -1,0 +1,60 @@
+# =============================================================
+# HAT Config File — Pakistan License Plate Enhancement
+# MPhil Thesis
+# =============================================================
+# This config:
+#   - Takes LR images from your LR folder
+#   - Saves enhanced images to LR_Enhancement_HAT folder
+#   - Does NOT need HR/ground truth images at all
+#   - Uses tile mode so your GPU does not run out of memory
+# =============================================================
+
+name: HAT_Pakistan_Plates
+model_type: HATModel
+scale: 4
+num_gpu: 1
+manual_seed: 0
+
+# ── NETWORK ARCHITECTURE ─────────────────────────────────────
+# These settings MUST match Real_HAT_GAN_SRx4.pth exactly
+network_g:
+  type: HAT
+  upscale: 4
+  in_chans: 3
+  img_size: 64
+  window_size: 16
+  compress_ratio: 3
+  squeeze_factor: 30
+  conv_scale: 0.01
+  overlap_ratio: 0.5
+  img_range: 1.
+  depths: [6, 6, 6, 6, 6, 6]
+  embed_dim: 180
+  num_heads: [6, 6, 6, 6, 6, 6]
+  mlp_ratio: 2
+  upsampler: 'pixelshuffle'
+  resi_connection: '1conv'
+
+# ── PRETRAINED WEIGHTS PATH ──────────────────────────────────
+path:
+  pretrain_network_g: experiments/pretrained_models/Real_HAT_GAN_SRx4.pth
+  strict_load_g: true
+  param_key_g: params_ema
+
+# ── INPUT DATASET ────────────────────────────────────────────
+# Points to your LR folder — original images, never touched
+datasets:
+  test_1:
+    name: PakistanLR
+    type: SingleImageDataset
+    dataroot_lq: C:\Users\Sunny\PycharmProjects\License_Plate_Detection_OCR\data\LR
+    io_backend:
+      type: disk
+
+# ── TILE MODE (prevents CUDA out of memory) ──────────────────
+# tile_size: how big each piece is — lower = less GPU memory used
+# tile_pad:  overlap between pieces — prevents edge artifacts
+val:
+  tile:
+    tile_size: 256
+    tile_pad: 32
